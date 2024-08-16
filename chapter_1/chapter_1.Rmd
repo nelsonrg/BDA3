@@ -1,0 +1,488 @@
+---
+title: "Chapter 1"
+author: "Bobby Nelson"
+date: "2024-03-14"
+output:
+  html_document:
+    theme: default
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+header-includes:
+  - \newcommand{\E}{\operatorname{E}}
+  - \newcommand{\Var}{\operatorname{Var}}
+  - \newcommand{\Cov}{\operatorname{Cov}}
+  - \newcommand{\Pr}{\operatorname{Pr}}
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(tidyverse)
+library(tidyr)
+library(kableExtra)
+```
+
+
+# Exercises
+
+## 1 -- Normals {.tabset}
+
+---
+
+**Conditional probability: suppose that if θ = 1, then y has a normal distribution with mean 1 and standard deviation σ, and if θ = 2, then y has a normal distribution with mean 2 and standard deviation σ. Also, suppose Pr(θ = 1) = 0.5 and Pr(θ = 2) = 0.5.**
+
+### a)
+
+**For σ = 2, write the formula for the marginal probability density for y and sketch it.**
+
+The formula for the marginal probability density $p(y)$ is
+
+$$
+\begin{align*}
+  p(y) &= \frac{1}{2}p(y \mid \theta=1) + \frac{1}{2}p(y \mid \theta=2) \\
+       &= \frac{1}{2}\frac{1}{\sigma}\varphi\left(\frac{y - 1}{\sigma}\right) + \frac{1}{2}\frac{1}{\sigma}\varphi\left(\frac{y - 2}{\sigma}\right) \\
+       &= \frac{1}{4}\varphi\left(\frac{y - 1}{2}\right) + \frac{1}{4}\varphi\left(\frac{y - 2}{2}\right)
+\end{align*}
+$$
+
+where $\varphi$ is the standard normal probability distribution defined as
+
+$$
+\varphi(x) = \frac{1}{\sqrt{2 \pi}}e^{-\frac{x^2}{2}}
+$$
+
+The plot looks like the following.
+
+```{r}
+y <- seq(from = -10, to = 10, length.out = 100)
+py <- 0.25*dnorm((y - 1)/2, mean = 0, sd = 1) + 0.25*dnorm((y - 2)/2, mean = 0, sd = 1)
+plot(y, py, type = "l", ylab = "p(y)", bty = "n")
+```
+
+Alternatively, we could plot it without using the standard normal conversion.
+
+```{r}
+y <- seq(from = -10, to = 10, length.out = 100)
+py <- 0.5*dnorm(y, mean = 1, sd = 2) + 0.5*dnorm(y, mean = 2, sd = 2)
+plot(y, py, type = "l", ylab = "p(y)", bty = "n")
+```
+
+### b)
+
+**What is Pr(θ = 1|y = 1), again supposing σ = 2?**
+
+$$
+\begin{align*}
+  \text{Pr}(\theta=1 \mid y=1) &= \frac{\text{Pr}(\theta=1)p(y=1 \mid \theta=1)}{p(y=1)} \\
+  &= \frac{\frac{1}{4}\varphi\left(\frac{1-1}{2}\right)}{\frac{1}{4}\varphi\left(\frac{1-1}{2}\right) + \frac{1}{4}\varphi\left(\frac{1-2}{2}\right)} \\
+  &= \frac{\frac{1}{\sqrt{2\pi}}}{\frac{1}{\sqrt{2\pi}} + \frac{e^{-\frac{1}{8}}}{\sqrt{2\pi}}} \\
+  &= \frac{1}{1 + e^{-\frac{1}{8}}} \\
+  &\approx 0.531
+\end{align*}
+$$
+
+### c)
+
+**Describe how the posterior density of θ changes in shape as σ is increased and as it is decreased.**
+
+Assuming we are discussing the posterior density given the observation $y = 1$ like above, as $\sigma$ increases the posterior looks more like the prior distribution and asymptotically approaches the prior as $\sigma$ goes to infinity. In this case, $\lim_{\sigma\to\infty} p(\theta = 1 \mid y = 1) = 0.5$. As $\sigma$ decreases, the posterior gets more concentrated around $\theta = 1$. Asymptotically $\lim_{\sigma\to0} p(\theta = 1 \mid y = 1) = 1$.
+
+## 2 -- Conditional Means and Variances
+
+---
+
+**Conditional means and variances: show that (1.8) and (1.9) hold if u is a vector.**
+
+For clarity, here are the respective equations.
+
+(1.8) $\E(u)=\E(\E(u \mid v))$
+(1.9) $\Var(u)=E(\Var(u \mid v)) + \Var(\E(u \mid v))$
+
+For each element of $\vec{u}$, $\E(u_i)=\E(\E(u_i \mid v))$ so it is the same as 1.8 componentwise.
+
+For variance, the diagonal of the covariance matrix is just the componentwise version of 1.9 where $\Var(u_i)=E(\Var(u_i \mid v)) + \Var(\E(u_i \mid v))$.
+
+For the off-diagonal elements we can demonstrate it the same way as for the non-vector version shown in the book.
+
+$$
+\begin{align*}
+  \E(\Cov(u_i, u_j \mid v)) + \Cov(\E(u_i \mid v), \E(u_j \mid v)) &=
+    \E(\E(u_i u_j \mid v) - \E(u_i \mid v) \E(u_j \mid v)) + \E(\E(u_i \mid v) \E(u_j \mid v)) - \E(\E(u_i \mid v)) \E(\E(u_j \mid v)) \\
+    &= \E(u_i u_j) - \E(\E(u_i \mid v) \E(u_j \mid v)) + \E(\E(u_i \mid v) \E(u_j \mid v)) - \E(\E(u_i \mid v)) \E(\E(u_j \mid v)) \\
+    &= \E(u_i u_j) - \E(u_i) \E(u_j)
+\end{align*}
+$$
+
+This is a more general form of equation 1.9 where $u_i$ and $u_j$ are different. When they are the same, the formula simplifies to equation 1.9.
+
+## 3 -- Genetics
+
+---
+
+Probability calculation for genetics (from Lindley, 1965): suppose that in each individual
+of a large population there is a pair of genes, each of which can be either x or X, that
+controls eye color: those with xx have blue eyes, while heterozygotes (those with Xx or
+xX) and those with XX have brown eyes. The proportion of blue-eyed individuals is p2
+and of heterozygotes is 2p(1 − p), where 0 < p < 1. Each parent transmits one of its
+own genes to the child; if a parent is a heterozygote, the probability that it transmits the
+gene of type X is 21 .
+
+**Assuming random mating, show that among brown-eyed children of brown-eyed parents, the expected proportion of heterozygotes is 2p/(1 + 2p).**
+
+$$
+\begin{align*}
+\Pr(\text{child is xX} \mid \text{child has brown eyes} \wedge \text{parents have brown eyes}) 
+  &= \frac{\Pr(\text{child is xX} \wedge \text{child has brown eyes} \wedge \text{parents have brown eyes})}
+          {\Pr(\text{child has brown eyes} \wedge \text{parents have brown eyes})} \\
+  &= \frac{\Pr(\text{child is xX} \wedge \text{parents have brown eyes})}
+          {\Pr(\text{child has brown eyes} \wedge \text{parents have brown eyes})} \\
+  &= \frac{\sum \Pr(\text{child is xX} \mid \text{parents have brown eyes})\Pr(\text{parents have brown eyes})}
+          {\sum \Pr(\text{child has brown eyes} \mid \text{parents have brown eyes})\Pr(\text{parents have brown eyes})} \\
+  &= \frac{\Pr(\text{child is xX} \mid \text{both parents xx})\Pr(\text{both parents xx})
+           + \Pr(\text{child is xX} \mid \text{parents xx and xX})\Pr(\text{parents xx and xX})
+           + \Pr(\text{child is xX} \mid \text{both parents XX})\Pr(\text{both parents XX})}
+          {\Pr(\text{child has brown eyes} \mid \text{both parents xx})\Pr(\text{both parents xx})
+           + \Pr(\text{child has brown eyes} \mid \text{parents xx and xX})\Pr(\text{parents xx and xX})
+           + \Pr(\text{child has brown eyes} \mid \text{both parents XX})\Pr(\text{both parents XX})} \\
+  &= \frac{0 \cdot (1-p)^4 + 0.5 \cdot 2 \cdot 2p(1-p)(1-p)^2 + 0.5 \cdot 4p^2(1-p)^2}
+          {1 \cdot (1-p)^4 + 1 \cdot 2 \cdot 2p(1-p)(1-p)^2 + 0.75 \cdot 4p^2(1-p)^2} \\
+  &= \frac{2p(1-p)^3 + 2p^2(1-p)^2}
+          {(1-p)^4 + 4p(1-p)^3 + 3p^2(1-p)^2} \\
+  &= \frac{(1-p)^2(2p(1-p)+2p^2)}
+          {(1-p)^2((1-p)^2 + 4p(1-p) + 3p^2)} \\
+  &= \frac{2p(1-p)+2p^2}
+          {(1-p)^2 + 4p(1-p) + 3p^2} \\
+  &= \frac{2p - 2p^2 + 2p^2}
+          {1 - 2p + p^2 + 4p -4p^2 + 3p^2} \\
+  &= \frac{2p}
+          {1 + 2p} \\
+\end{align*}
+$$
+
+Note that we could simplify the calculation by recognizing that all heterozygotes have brown eyes so that $\Pr(\text{child is xX} \wedge \text{child has brown eyes} \wedge \text{parents have brown eyes}) = \Pr(\text{child is xX} \wedge \text{parents have brown eyes})$.
+
+**Suppose Judy, a brown-eyed child of brown-eyed parents, marries a heterozygote, and they have n children, all brown-eyed. Find the posterior probability that Judy is a heterozygote and the probability that her first grandchild has blue eyes.**
+
+$$
+\begin{align*}
+  \Pr(\text{Judy xX} \mid n \ \text{children brown eyes} \wedge \text{all other info}) &=
+    \frac{\Pr(n \ \text{children brown eyes} \mid \text{Judy xX})\Pr(\text{Judy xX})}{\Pr(n \ \text{children brown eyes})} \\
+    &= \frac{(1-0.25)^n \frac{2p}{1+2p}}{(1-0.25)^n \frac{2p}{1+2p} + 1^n \frac{1}{1+2p}} \\
+    &= \frac{0.75^n \cdot 2p}{1 + 0.75^n \cdot 2p}
+\end{align*}
+$$
+
+In order for her first grandchild to have blue eyes, her child must be a heterozygote. This probability is
+
+$$
+\begin{align*}
+  \Pr(\text{child is xX}) =& \Pr(\text{child ix xX} \mid \text{Judy is xX} \wedge \text{child has brown eyes})\Pr(\text{Judy is xX}) + \\
+                          & \Pr(\text{child ix xX} \mid \text{Judy is XX} \wedge \text{child has brown eyes})\Pr(\text{Judy is XX}) \\
+                          =& \frac{2}{3} \frac{0.75^n \cdot 2p}{1 + 0.75^n \cdot 2p} + \frac{1}{2} \frac{1}{1 + 0.75^n \cdot 2p}
+\end{align*}
+$$
+
+Now the probability that the first grandchild has blue eyes depends on the alleles of the grandchild's other parent. Assuming random mating, the probability is
+
+$$
+\begin{align*}
+  \Pr(\text{grandchild has blue eyes} &= \\
+  &\Pr(\text{grandchild has blue eyes} \mid \text{child is xX} \wedge \text{other parent is xX})\Pr(\text{child is xX} \wedge \text{other parent is xX})) + \\
+  &\Pr(\text{grandchild has blue eyes} \mid \text{child is xX} \wedge \text{other parent is XX})\Pr(\text{child is xX} \wedge \text{other parent is XX})) + \\
+  &\Pr(\text{grandchild has blue eyes} \mid \text{child is xX} \wedge \text{other parent is xx})\Pr(\text{child is xX} \wedge \text{other parent is xx})) \\
+  &= \left(\frac{2}{3} \frac{0.75^n \cdot 2p}{1 + 0.75^n \cdot 2p} + \frac{1}{2} \frac{1}{1 + 0.75^n \cdot 2p} \right)
+     \left(0.25 \cdot 2p(1-p) + 0 \cdot (1-p)^2 + 0.5 \cdot p^2\right) \\
+  &= \left(\frac{2}{3} \frac{0.75^n \cdot 2p}{1 + 0.75^n \cdot 2p} + \frac{1}{2} \frac{1}{1 + 0.75^n \cdot 2p} \right)
+     \left(0.5 p\right)
+\end{align*}
+$$
+
+## 4 -- Soccer {.tabset}
+
+---
+
+**Probability assignment: we will use the football dataset to estimate some conditional probabilities about professional football games. There were twelve games with point spreads of 8 points; the outcomes in those games were: −7, −5, −3, −3, 1, 6, 7, 13, 15, 16, 20, and 21, with positive values indicating wins by the favorite and negative values indicating wins by the underdog. Consider the following conditional probabilities**
+
+Pr(favorite wins | point spread = 8),
+
+Pr(favorite wins by at least 8 | point spread = 8),
+
+Pr(favorite wins by at least 8 | point spread = 8 and favorite wins)
+
+### a)
+
+**Estimate each of these using the relative frequencies of games with a point spread of 8.**
+
+$$
+\Pr(\text{favorite wins} \mid \text{point spread} = 8) = \frac{8}{12} = \frac{2}{3}
+$$
+
+$$
+\Pr(\text{favorite wins by at least 8} \mid \text{point spread} = 8) = \frac{5}{12}
+$$
+
+$$
+\Pr(\text{favorite wins by at least 8} \mid \text{point spread} = 8 \text{ and favorite wins}) = \frac{5}{8}
+$$
+
+### b)
+
+**Estimate each using the normal approximation for the distribution of (outcome − point spread).**
+
+Use the Normal approximation model developed in the chapter $\text{outcome} - \text{spread}|\text{spread} \sim \mathcal{N}(0, 13.86^2)$.
+
+```{r}
+cat(sprintf("Frequency: %.2f \n", 2/3))
+cat(sprintf("Normal Approximation: %.2f", pnorm(-7.5, 0, 13.86, lower.tail = FALSE)))
+```
+
+```{r}
+cat(sprintf("Frequency: %.2f \n", 5/12))
+cat(sprintf("Normal Approximation: %.2f", pnorm(-0.5, 0, 13.86, lower.tail = FALSE)))
+```
+
+```{r}
+cat(sprintf("Frequency: %.2f \n", 5/8))
+cat(sprintf("Normal Approximation: %.2f",
+            pnorm(-0.5, 0, 13.86, lower.tail = FALSE)/
+              pnorm(-7.5, 0, 13.86, lower.tail = FALSE)))
+```
+
+## 5 -- Elections {.tabset}
+
+---
+
+Probability assignment: the 435 U.S. Congressmembers are elected to two-year terms;
+the number of voters in an individual congressional election varies from about 50,000 to
+350,000. We will use various sources of information to estimate roughly the probability
+that at least one congressional election is tied in the next national election.
+
+### a)
+
+**Use any knowledge you have about U.S. politics. Specify clearly what information you are using to construct this conditional probability, even if your answer is just a guess.**
+
+Some things I think I know. Most districts are either strongly democratic or republican, so the races are not usually close. However, "strongly" in favor of one party or the other is a percentage difference of about 50%. I think that this is actually a bit too strong, so this might be a lower bound on tie probability (the probability of a tie increases as the disparity lessens). So plausible ranges of win probability are between 25% and 75%. I'm not exactly sure what this distribution would look like *a priori*. I can see arguments that it is unimodal at 50% like some sort of beta distribution. I could also see it being bimodal with peaks to the left and right of 50% indicating that most districts lean one way or the other on the political spectrum. Because of this uncertainty, we could try multiple priors. For this problem, I will just assume a uniform prior between 0.25 and 0.75 win probability ($y/n$) for one of the parties.
+
+$$
+\Pr(\text{election is a tie} \mid n \text{ votes}) =
+  \begin{cases} 
+    \frac{1}{0.5n} & n \ \text{is even} \\
+    0 & n \ \text{is odd}
+  \end{cases}
+$$
+
+We can run a simulation to validate the analytical solution.
+
+```{r}
+n_voters <- seq(from = 50000, to = 350000, by = 50000)
+
+n_sim <- 100000
+
+simulate_election <- function(n_voters) {
+   p <- runif(1, 0.25, 0.75)
+   dbinom(n_voters / 2, n_voters, p)
+}
+
+sim_tie_prob <- sapply(n_voters, \(x) replicate(n_sim, simulate_election(x)))
+sim_tie_prob_mean <- apply(sim_tie_prob, 2, mean)
+sim_tie_prob_sem <- apply(sim_tie_prob, 2, sd) / sqrt(n_sim)
+
+plot(n_voters, sim_tie_prob_mean, type = "b", col = "darkred", lty = 2, pch = 20,
+     bty = "l",
+     xlab = "Number of Voters", ylab = "Probability of a Tie")
+segments(n_voters, sim_tie_prob_mean - 1.96*sim_tie_prob_sem,
+         n_voters, sim_tie_prob_mean + 1.96*sim_tie_prob_sem,
+         col = "darkred", lwd = 2)
+lines(n_voters, 1/(n_voters*0.5), type = "b", col = "darkblue", lty = 1)
+legend("topright", col = c("darkred", "darkblue"),
+       pch = c(20, 1), lty = c(2, 1),
+       legend = c("Simulation", "Analytical"), bty = "n")
+```
+
+Now let us calculate the probability of at least one tie assuming $n = 200,000$ for each election and that half the elections have an even $n$.
+
+```{r}
+p_tie <- 1 / (0.5*200000) * 0.5
+cat(sprintf("Probability of at least one tie: %f \n", 1 - (1 - p_tie)^435))
+```
+
+### b)
+
+**Use the following information: in the period 1900–1992, there were 20,597 congressional elections, out of which 6 were decided by fewer than 10 votes and 49 decided by fewer than 100 votes.**
+
+The probability of being within 100 votes is now $\frac{49}{20,597}$. If we assume a uniform probability distribution in this range, the probability of a tie is $\frac{49}{20,597} \cdot \frac{1}{199}$ which is `r 49/20597 * 1/199`.
+
+```{r}
+p_tie <- 49/20597 * 1/199
+cat(sprintf("Probability of at least one tie: %f \n", 1 - (1 - p_tie)^435))
+```
+
+This is more than twice as likely as our previous estimate.
+
+## 6 -- Elvis's Twin
+
+---
+
+**Approximately 1/125 of all births are fraternal twins and 1/300 of births are identical twins. Elvis Presley had a twin brother (who died at birth). What is the probability that Elvis was an identical twin?**
+
+I solved this with Bayes' Theorem.
+
+$$
+\Pr(\text{Fraternal Twins}) = \frac{1}{125} \\
+\Pr(\text{Identical Twins}) = \frac{1}{300} \\
+\Pr(\text{Fraternal Twins} \mid \text{Twins}) = \frac{1/125}{1/125 + 1/300} \\
+\Pr(\text{Identical Twins} \mid \text{Twins}) = \frac{1/300}{1/125 + 1/300} \\
+\Pr(\text{Identical Twins} \mid \text{Both boys}, \text{Twins}) =
+  \frac{\Pr(\text{Identical Twin} \mid \text{Twins})
+        \Pr(\text{Both boys} \mid \text{Identical Twin}, \text{Twins})}
+       {\Pr(\text{Both boys} \mid \text{Twins})}
+$$
+
+```{r}
+p_frat <- 1/125
+p_id <- 1/300
+p_frat_given_twin <- p_frat / (p_frat + p_id)
+p_id_given_twin <- p_id / (p_frat + p_id)
+
+p_elvis_identical_twin <- p_id_given_twin*0.5 / (0.5*p_id_given_twin + 0.25*p_frat_given_twin)
+cat(sprintf("Probability that Elvis was an identical twin: %f \n", p_elvis_identical_twin))
+```
+
+## 7 -- Monty Hall
+
+---
+
+**Conditional probability: the following problem is loosely based on the television game
+show Let’s Make a Deal. At the end of the show, a contestant is asked to choose one of
+three large boxes, where one box contains a fabulous prize and the other two boxes contain
+lesser prizes. After the contestant chooses a box, Monty Hall, the host of the show,
+opens one of the two boxes containing smaller prizes. (In order to keep the conclusion
+suspenseful, Monty does not open the box selected by the contestant.) Monty offers the
+contestant the opportunity to switch from the chosen box to the remaining unopened box.
+Should the contestant switch or stay with the original choice? Calculate the probability
+that the contestant wins under each strategy. This is an exercise in being clear about the
+information that should be conditioned on when constructing a probability judgment.
+See Selvin (1975) and Morgan et al. (1991) for further discussion of this problem.**
+
+For this problem I am going to set-up a helpful table to apply Bayes' Theorem.
+
+Let the doors be labeled `A`, `B`, and `C`. The contestant chose door `A` and door `C` was revealed to have the smaller prize. We can answer the question of whether the contestant should stay with door `A` or switch to door `B`.
+
+```{r}
+door_label <- c("A", "B", "C")
+p_H <- c(1/3, 1/3, 1/3)
+p_EgivH <- c(1/2, 1, 0)
+p_HgivE <- p_H*p_EgivH
+p_HgivE <- p_HgivE / sum(p_HgivE)  # standardize
+
+tab <- tibble(
+  Door = door_label,
+  `P(H)` = p_H,
+  `P(E|H)` = p_EgivH,
+  `P(H|E)` = p_HgivE
+)
+
+tab |>
+  kbl() |>
+  kable_classic()
+```
+
+So we see that switching results in a 2/3 probability of winning while staying with the original door only has a 1/3 probability.
+
+## 8 -- Subjective Probability {.tabset}
+
+---
+
+**Subjective probability: discuss the following statement.**
+
+The probability of event $E$ is considered "subjective" if two rational persons A and B can assign unequal probabilities to $E$, $P_A(E)$ and $P_B(E)$. These probabilities can also be interpreted as "conditional": $P_A(E) = P(E \mid I_A)$ and $P_B(E) = P(E \mid I_B)$, where $I_A$ and $I_B$ represent the knowledge available to persons A and B respectively. Apply this idea to the following examples.
+
+### a)
+
+**The probability that a `6` appears when a fair die is rolled, where A observes the outcome of the die roll and B does not.**
+
+For person A, their subjective probability starts with a prior that is the same as person B's subjective probability (before any observations). Person B's conditional probability does not change because they make no observation. Person A's posterior probability updates the prior based on the observation.
+
+### b)
+
+**The probability that Brazil wins the next World Cup, where A is ignorant of soccer and B is a knowledgeable sports fan.**
+
+Again we have a similar situation where we have asymmetric information. One way to think of the problem is that person A has a relatively flat/uninformative prior belief about the outcome of the match because they have very little information to draw from. Realistically they probably have some information to improve on a completely uninformative prior to a weakly useful posterior. Person B also began with an uninformative flat prior before learning anything of soccer, but then their posterior belief has been updated through many observations (previous matches, player trends, injury reports, etc). So their current probability is conditioned on many observations.
+
+## 9 -- Queue Simulation {.tabset}
+
+---
+
+**Simulation of a queuing problem: a clinic has three doctors. Patients come into the
+clinic at random, starting at 9 a.m., according to a Poisson process with time parameter
+10 minutes: that is, the time after opening at which the first patient appears follows an
+exponential distribution with expectation 10 minutes and then, after each patient arrives,
+the waiting time until the next patient is independently exponentially distributed, also
+with expectation 10 minutes. When a patient arrives, he or she waits until a doctor
+is available. The amount of time spent by each doctor with each patient is a random
+variable, uniformly distributed between 5 and 20 minutes. The office stops admitting
+new patients at 4 p.m. and closes when the last patient is through with the doctor.**
+
+### a)
+
+**Simulate this process once. How many patients came to the office? How many had to wait for a doctor? What was the average wait? When did the office close?**
+
+```{r}
+set.seed(100)
+
+simulate_clinic <- function() {
+  max_time = 60 * 7  # opens at 9am and stops admitting at 4pm
+  mean <- 10
+  # get queue of patient arrival times up front
+  patient_queue <- cumsum(rexp(max_time / (mean/2), rate = 1/mean))
+  if (max(patient_queue) < max_time) print("Not enough patients simulated")
+  patient_queue <- patient_queue[patient_queue < max_time]
+  
+  patient_arrivals <- patient_queue
+  patient_wait_time <- c()
+  
+  n_doctors <- 3
+  doctor_available <- rep(0, n_doctors)
+  
+  for (i in 1:length(patient_queue)) {
+    patient_arrival <- patient_queue[i]
+    visit_start <- max(patient_arrival, min(doctor_available))
+    wait_time <- visit_start - patient_arrival
+    patient_wait_time <- c(patient_wait_time, wait_time)
+    
+    visit_time <- runif(1, 5, 20)
+    doctor <- which.min(doctor_available)
+    doctor_available[doctor] <- visit_start + visit_time
+  }
+  
+  list(n = length(patient_arrivals),
+       n_wait = sum(patient_wait_time > 0),
+       avg_wait = mean(patient_wait_time),
+       total_wait = sum(patient_wait_time),
+       closing_time = max(doctor_available))
+}
+
+simulate_clinic()
+```
+
+### b)
+
+**Simulate the process 100 times and estimate the median and 50% interval for each of the summaries in a).**
+
+```{r}
+sim_results <- unnest(as.data.frame(t(replicate(1000, simulate_clinic()))),
+                      cols = c(n, n_wait, avg_wait, total_wait, closing_time))
+
+sim_results |>
+  pivot_longer(cols = c(n, n_wait, avg_wait, total_wait, closing_time)) |>
+  group_by(name) |>
+  summarize(q25 = quantile(value, 0.25),
+            q50 = median(value),
+            q95 = quantile(value, 0.75))
+```
+
