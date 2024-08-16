@@ -1,0 +1,93 @@
+---
+title: "Chapter 2"
+author: "Bobby Nelson"
+date: "2024-08-16"
+output:
+  html_document:
+    theme: default
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+header-includes:
+  - \newcommand{\E}{\operatorname{E}}
+  - \newcommand{\Var}{\operatorname{Var}}
+  - \newcommand{\Cov}{\operatorname{Cov}}
+  - \newcommand{\Pr}{\operatorname{Pr}}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(tidyverse)
+library(tidyr)
+library(kableExtra)
+```
+
+# Chapter Notes
+
+## Derive Equation 2.6
+
+---
+
+The authors leave the following integration problem as an exercise to the reader.
+
+**For posterior prediction from this model, we might be more interested in the outcome of one new trial, rather than another set of $n$ new trials. Letting $\tilde{y}$ denote the result of a new trial, exchangeable with the first $n$,**
+
+$$
+\begin{align*}
+  \Pr(\tilde{y}=1 \mid y)
+    &= \int_0^1 \Pr(\tilde{y}=1 \mid \theta, y) p(\theta \mid y) d \theta \\
+    &= \int_0^1 \theta p(\theta \mid y) d \theta \\
+    &= E(\theta \mid y) \\
+    &= \frac{y + 1}{n + 2}
+\end{align*}
+$$
+
+**from the properties of the beta distribution.**
+
+We start by specifying that $p(\theta \mid y) \sim {n \choose y} \theta^y (1 - \theta)^{n-y}$. This is equivalent to $\text{Beta}(y + 1, n + 1 - y)$.
+
+Next we substitute the gamma notation for the binomial coefficient ${n \choose y} = \frac{\Gamma{(n+2)}}{\Gamma{(y+1)} \ \Gamma{(n+1-y)}}$.
+
+So we have
+
+$$
+\begin{align*}
+  E(\theta \mid y)
+    &= \int_0^1 \theta \frac{\Gamma{(n+2)}}{\Gamma{(y+1)} \ \Gamma{(n+1-y)}} \theta^y (1 - \theta)^{n-y} d \theta \\
+    &= \int_0^1 \frac{\Gamma{(n+2)}}{\Gamma{(y+1)} \ \Gamma{(n+1-y)}} \theta^{y+1} (1 - \theta)^{n-y} d \theta 
+\end{align*}
+$$
+
+We now want to manipulate the expression so that the terms inside the integral are a Beta distribution with $\alpha = y + 2$ and $\beta = n + 1 - y$. The Beta coefficient for these terms will be $B(y + 2, n + 1 - y) = \frac{\Gamma{(y+2)} \ \Gamma{(n+1-y)}}{\Gamma{(n+3)}}$. The integral of any Beta distribution from 0 to 1 is 1.
+
+$$
+\begin{align*}
+  E(\theta \mid y)
+    &= \int_0^1 \frac{\Gamma{(n+2)}}{\Gamma{(y+1)} \ \Gamma{(n+1-y)}} \theta^{y+1} (1 - \theta)^{n-y} d \theta \\
+    &= \frac{\Gamma{(y+2)}}{\Gamma{(y+1)}} \frac{\Gamma{(n+2)}}{\Gamma{(n+3)}}
+        \int_0^1 \frac{\Gamma{(n+3)}}{\Gamma{(y+2)} \ \Gamma{(n+1-y)}} \theta^{y+1} (1 - \theta)^{n-y} d \theta \\
+    &= \frac{\Gamma{(y+2)}}{\Gamma{(y+1)}} \frac{\Gamma{(n+2)}}{\Gamma{(n+3)}} \times 1
+\end{align*}
+$$
+
+Recall that $\Gamma{(x+1)} = x \Gamma{(x)}$ to simplify the expression.
+
+$$
+\begin{align*}
+  E(\theta \mid y)
+    &= \frac{\Gamma{(y+2)}}{\Gamma{(y+1)}} \frac{\Gamma{(n+2)}}{\Gamma{(n+3)}} \\
+    &= \frac{(y+1) \Gamma{(y+1)}}{\Gamma{(y+1)}} \frac{\Gamma{(n+2)}}{(n+2)\Gamma{(n+2)}} \\
+    &= \frac{y+1}{n+2}
+\end{align*}
+$$
+
+
+
+
+
+
+

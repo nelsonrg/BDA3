@@ -1,6 +1,6 @@
 * Bayesian Data Analysis Exercises
 
-This project contains my attempted solutions to the exercises in /Bayesian Data Analysis/[fn:BDA3].
+This project contains my attempted solutions to the exercises in /Bayesian Data Analysis/ [fn:BDA3].
 
 [fn:BDA3] Gelman, A., Carlin, J.B., Stern, H.S., Dunson, D.B., Vehtari, A., & Rubin, D.B. (2013). Bayesian Data Analysis (3rd ed.). Chapman and Hall/CRC. https://doi.org/10.1201/b16018
 
