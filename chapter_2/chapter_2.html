@@ -1486,6 +1486,11 @@ border-radius: 0px;
 </div>
 
 
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
 <div id="chapter-notes" class="section level1">
 <h1>Chapter Notes</h1>
 <div id="derive-equation-2.6" class="section level2">
@@ -1556,6 +1561,54 @@ distribution from 0 to 1 is 1.</p>
     &amp;= \frac{y+1}{n+2}
 \end{align*}
 \]</span></p>
+</div>
+<div id="show-that-the-binomial-is-in-the-exponential-family" class="section level2">
+<h2>Show that the binomial is in the exponential family</h2>
+<hr />
+<p>From the chapter, exponential families are of the form</p>
+<p><span class="math display">\[
+\begin{equation}
+  \label{eq:expfamily}
+  p(y \mid \theta) = f(y) g(\theta)^n e^{\phi(\theta)^T t(y)}
+\end{equation}
+\]</span></p>
+<p>Start with the binomial distribution and collect the terms by their
+exponent.</p>
+<p><span class="math display">\[
+\begin{align*}
+  p(y \mid \theta, n)
+    &amp;= {n \choose y} \theta^y (1-\theta)^{n-y} \\
+    &amp;= {n \choose y} \theta^y (1-\theta)^{-y} (1-\theta)^n \\
+    &amp;= {n \choose y} (1-\theta)^n \left( \frac{\theta}{1-\theta}
+\right)^y
+\end{align*}
+\]</span></p>
+<p>Now put the last term in an exponent.</p>
+<p><span class="math display">\[
+\begin{align*}
+  p(y \mid \theta, n)
+    &amp;= {n \choose y} (1-\theta)^n \left( \frac{\theta}{1-\theta}
+\right)^y \\
+    &amp;= {n \choose y} (1-\theta)^n e^{y
+\log{\frac{\theta}{1-\theta}}}
+\end{align*}
+\]</span></p>
+<p>This is in the form of the exponential family as given in Equation
+<span class="math inline">\(\eqref{eq:expfamily}\)</span>.</p>
+<p><span class="math display">\[
+\begin{align*}
+  f(y) &amp;= {n \choose y} \\
+  g(\theta) &amp;= (1 - \theta) \\
+  \phi(\theta) &amp;= \log{\frac{\theta}{1 - \theta}} \\
+  t(y) &amp;= y
+\end{align*}
+\]</span></p>
+<span class="math display">\[\begin{align*}
+  f(y) &amp;= {n \choose y} \\
+  g(\theta) &amp;= (1 - \theta) \\
+  \phi(\theta) &amp;= \log{\frac{\theta}{1 - \theta}} \\
+  t(y) &amp;= y
+\end{align*}\]</span>
 </div>
 </div>
 

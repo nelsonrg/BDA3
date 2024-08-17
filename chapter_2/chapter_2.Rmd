@@ -14,7 +14,15 @@ header-includes:
   - \newcommand{\Var}{\operatorname{Var}}
   - \newcommand{\Cov}{\operatorname{Cov}}
   - \newcommand{\Pr}{\operatorname{Pr}}
+  - \usepackage{amsmath}
 ---
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -85,8 +93,50 @@ $$
 \end{align*}
 $$
 
+## Show that the binomial is in the exponential family
 
+---
 
+From the chapter, exponential families are of the form
+
+$$
+\begin{equation}
+  \label{eq:expfamily}
+  p(y \mid \theta) = f(y) g(\theta)^n e^{\phi(\theta)^T t(y)}
+\end{equation}
+$$
+
+Start with the binomial distribution and collect the terms by their exponent.
+
+$$
+\begin{align*}
+  p(y \mid \theta, n)
+    &= {n \choose y} \theta^y (1-\theta)^{n-y} \\
+    &= {n \choose y} \theta^y (1-\theta)^{-y} (1-\theta)^n \\
+    &= {n \choose y} (1-\theta)^n \left( \frac{\theta}{1-\theta} \right)^y
+\end{align*}
+$$
+
+Now put the last term in an exponent.
+
+$$
+\begin{align*}
+  p(y \mid \theta, n)
+    &= {n \choose y} (1-\theta)^n \left( \frac{\theta}{1-\theta} \right)^y \\
+    &= {n \choose y} (1-\theta)^n e^{y \log{\frac{\theta}{1-\theta}}}
+\end{align*}
+$$
+
+This is in the form of the exponential family as given in Equation $\eqref{eq:expfamily}$.
+
+$$
+\begin{align*}
+  f(y) &= {n \choose y} \\
+  g(\theta) &= (1 - \theta) \\
+  \phi(\theta) &= \log{\frac{\theta}{1 - \theta}} \\
+  t(y) &= y
+\end{align*}
+$$
 
 
 
