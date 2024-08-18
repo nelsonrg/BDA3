@@ -29,7 +29,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, include=FALSE}
+library(purrr)
+library(dplyr)
 library(latex2exp)
+library(kableExtra)
 ```
 
 # Chapter Notes
@@ -246,5 +249,53 @@ $$
     &\approx 2.24 
 \end{align*}
 $$
+
+
+## 3 {.tabset}
+
+---
+
+**Predictive distributions: let y be the number of 6’s in 1000 rolls of a fair die.**
+
+### a)
+
+**Sketch the approximate distribution of y, based on the normal approximation.**
+
+$$
+\E[y] = 1000 \times \frac{1}{6} \approx 166.67
+$$
+
+$$
+\Var[y] = 1000 \times \frac{1}{6} \times \frac{5}{6} \approx 138.89
+$$
+
+```{r}
+y <- seq(0, 1000)
+plot(
+  x = y,
+  y = dnorm(y, 1000/6, sqrt(1000 * (1/6) * (5/6))),
+  type = "l",
+  xlab = "Number of 6's Rolled in 1000 Rolls",
+  ylab = "Probability",
+  xlim = c(100, 250)
+)
+```
+
+### b)
+
+**Using the normal distribution table, give approximate 5%, 25%, 50%, 75%, and 95% points for the distribution of y.**
+
+```{r, results="asis"}
+quantiles <- c(0.05, 0.25, 0.5, 0.75, 0.95)
+results <- qnorm(quantiles, 1000/6, sqrt(1000 * (1/6) * (5/6)))
+
+tibble(
+  "Quantile" = as.integer(quantiles * 100),
+  "Value" = round(results, 2)
+) |>
+  kbl() |>
+  kable_classic()
+```
+
 
 
