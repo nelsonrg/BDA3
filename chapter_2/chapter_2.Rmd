@@ -203,5 +203,48 @@ legend(
 )
 ```
 
+## 2
+
+---
+
+**Predictive distributions: consider two coins, C1 and C2 , with the following characteristics: Pr(heads|C1 ) = 0.6 and Pr(heads|C2 ) = 0.4. Choose one of the coins at random and imagine spinning it repeatedly. Given that the first two spins from the chosen coin are tails, what is the expectation of the number of additional spins until a head shows up?**
+
+Let the data collected of two tails be denoted as $d$.
+
+Given that it is equally likely to pick either of the two coins (prior probability of 0.5 for both coins), the posterior probability of the spun coin being C1 is
+
+$$
+\begin{align*}
+  \Pr(c_1 \mid d)
+    &= \frac{\Pr(c_1) \Pr(d \mid c_1)}{\Pr(d)} \\
+    &= \frac{\frac{1}{2} \times (\frac{2}{5})^2}
+            {\frac{1}{2} \times (\frac{2}{5})^2 + \frac{1}{2} \times (\frac{3}{5})^2} \\
+    &= \frac{4}{13}
+\end{align*}
+$$
+
+So the posterior probability for C1 is $\frac{9}{13}$.
+
+The expected number of flips until a heads for each coin is the expectation of the geometric distribution which is $\frac{1}{p}$ where $p$ is the probability of each individual spin landing on heads.
+
+$$
+E[N \mid c_1] = \frac{5}{3}
+$$
+
+$$
+E[N \mid c_2] = \frac{5}{2}
+$$
+
+The total expectation is these expectations averaged over the posterior probability.
+
+$$
+\begin{align*}
+  E[N \mid d] 
+    &= p(c_1 \mid d) E[c_1] + p(c_2 \mid d) E[c_2] \\
+    &= \frac{4}{13} \times \frac{5}{3} + \frac{9}{13} \times \frac{5}{2} \\
+    &= \frac{175}{78} \\
+    &\approx 2.24 
+\end{align*}
+$$
 
 
