@@ -29,9 +29,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, include=FALSE}
-library(tidyverse)
-library(tidyr)
-library(kableExtra)
+library(latex2exp)
 ```
 
 # Chapter Notes
@@ -138,6 +136,72 @@ $$
 \end{align*}
 $$
 
+# Exercises
+
+## 1
+
+---
+
+**Posterior inference: suppose you have a Beta(4, 4) prior distribution on the probability θ that a coin will yield a ‘head’ when spun in a specified manner. The coin is independently spun ten times, and ‘heads’ appear fewer than 3 times. You are not told how many heads were seen, only that the number is less than 3. Calculate your exact posterior density (up to a proportionality constant) for θ and sketch it.**
+
+The prior density is
+
+$$
+p(\theta) = \frac{1}{B(4, 4)} \theta^3(1-\theta)^3
+$$
+
+The likelihood of fewer than 3 heads is the cumulative mass function from $y = 0$ to $y = 2$.
+
+$$
+\begin{align*}
+  p(y \mid \theta)
+    &= {10 \choose 0} \theta^0(1-\theta)^{10} + 
+       {10 \choose 1} \theta^1(1-\theta)^{9} +
+       {10 \choose 2} \theta^2(1-\theta)^{8} \\
+    &= (1-\theta)^{10} +
+       10 \theta (1-\theta)^9 +
+       45 \theta^2 (1-\theta)^8
+\end{align*}
+$$
+
+So the posterior density is
+
+$$
+\begin{align*}
+  p(\theta \mid y) &= p(\theta) p(y \mid \theta) \\
+    &\propto \theta^3(1-\theta)^{13} +
+             10 \theta^4 (1-\theta)^{12} +
+             45 \theta^5 (1-\theta)^{11}
+\end{align*}
+$$
+
+```{r}
+theta <- seq(0, 1, length.out = 100)
+prior <- dbeta(theta, 4, 4)
+posterior <- (dbinom(0, 10, theta) +
+              dbinom(1, 10, theta) +
+              dbinom(2, 10, theta)) * prior
+posterior <- posterior * sum(prior) / sum(posterior)  # approximate scaling
+plot(
+  x = theta,
+  y = prior,
+  type = "l",
+  lty = "dashed",
+  xlab = TeX(r"($\theta$)"),
+  ylab = TeX(r"($p(\theta)$)"),
+  ylim = c(0, ceiling(max(prior, posterior)))
+)
+lines(
+  x = theta,
+  y = posterior,
+  lty = "solid"
+)
+legend(
+  x = "topright",
+  lty = c("dashed", "solid"),
+  legend = c("Prior", "Posterior")
+)
+```
 
 
 
