@@ -31,6 +31,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, include=FALSE}
 library(purrr)
 library(dplyr)
+library(ggplot2)
 library(latex2exp)
 library(kableExtra)
 ```
@@ -297,5 +298,128 @@ tibble(
   kable_classic()
 ```
 
+## 4 {.tabset}
+
+---
+
+Predictive distributions: let y be the number of 6’s in 1000 independent rolls of a particular real die, which may be unfair. Let θ be the probability that the die lands on ‘6.’ Suppose your prior distribution for θ is as follows:
+
+Pr(θ = 1/12) = 0.25
+
+Pr(θ = 1/6) = 0.5
+
+Pr(θ = 1/4) = 0.25
+
+### a)
+
+**Using the normal approximation for the conditional distributions, p(y|θ), sketch your approximate prior predictive distribution for y.**
+
+This is a mixture of three Gaussians.
+
+```{r}
+y <- seq(0, 1000)
+
+thetas <- c(1/12, 1/6, 1/4)
+p_y_given_theta <- lapply(thetas, \(p) dnorm(y, 1000 * p, sqrt(1000 * p * (1-p))))
+prior <- c(0.25, 0.5, 0.25)
+
+prior_predictive <- Reduce(`+`,
+                           Map(`*`, p_y_given_theta, prior))
+
+plot(
+  x = y,
+  y = prior_predictive,
+  type = "l",
+  lty = "solid",
+  xlim = c(50, 300),
+  xlab = "Number of 6's Rolled in 1000 Rolls",
+  ylab = "Probability",
+  yaxs = "i"
+)
+walk(Map(`*`, p_y_given_theta, prior),
+     \(g) lines(y, g, lty = "dashed", col = "darkred"))
+legend(
+  x = "topright",
+  lty = c("solid", "dashed"),
+  col = c("black", "darkred"),
+  legend = c("Prior Predictive", "Conditional")
+)
+```
+
+### b)
+
+We can approximate these given that the three individual Gaussian distributions have essentially no overlap.
+
+Here are the approximate mean and standard deviations of each of the Gaussians.
+
+$$
+\E[g_1] = \frac{1000}{12} \approx 83.33 \\
+\E[g_2] = \frac{1000}{6} \approx 166.67 \\
+\E[g_3] = \frac{1000}{4} = 250 \\ \\
+\sigma[g_1] \approx 8.74 \\
+\sigma[g_2] \approx 11.78 \\
+\sigma[g_3] \approx 13.69
+$$
+
+Based on the prior distributions, 25% of the probability is in the left curve, 50% is in the middle curve, and 25% is in the right curve.
+
+So the 5% quantile is just the 20% quantile of the first curve which is `r round(qnorm(0.2, 1000 / 12, sqrt(1000 * (1/12) * (11/12))), 0)`.
+
+The 25% quantile is between the first two curves which is about 120.
+
+The 50% quantile is the middle of the second curve which is 167.
+
+The 75% quantile is between the second and third curves which is about 210.
+
+The 95% quantile is the 80% quantile of the third curve which is `r round(qnorm(0.8, 1000 / 4, sqrt(1000 * (1/4) * (3/4))), 0)`.
 
 
+Another approach we could take would be to draw random samples from the distribution and use these to empirically estimate the quantiles. This approach would generalize to situations where the Gaussians were more mixed.
+
+```{r}
+samples <- sample(y, size = 10000, replace = TRUE, prob = prior_predictive)
+quantile(samples, c(0.05, 0.25, 0.5, 0.75, 0.95), names = FALSE)
+```
+
+These are pretty close to the values we estimated.
+
+```{r}
+quantiles <- c(0.05, 0.25, 0.5, 0.75, 0.95)
+sample_quantiles <-
+  replicate(
+    1000,
+    {
+      samples <- sample(y, size = 10000, replace = TRUE, prob = prior_predictive)
+      quantile(samples, quantiles, names = FALSE)
+    }
+)
+
+empirical_results <- tibble(
+  "Quantile" = as.integer(quantiles * 100),
+  "Median" = apply(sample_quantiles, 1, median),
+  "5%" = apply(sample_quantiles, 1, \(x) quantile(x, 0.05, names = FALSE)),
+  "95%" = apply(sample_quantiles, 1, \(x) quantile(x, 0.95, names = FALSE)),
+  "Estimate" = c(round(qnorm(0.2, 1000 / 12, sqrt(1000 * (1/12) * (11/12))), 0),
+                 120, 167, 210,
+                 round(qnorm(0.8, 1000 / 4, sqrt(1000 * (1/4) * (3/4))), 0))
+)
+
+empirical_results |>
+  kbl() |>
+  kable_classic()
+```
+
+```{r}
+ggplot(empirical_results,
+       aes(y = Quantile)) +
+  geom_point(aes(x = Estimate),
+             color = "darkred",
+             fill = "darkred",
+             pch = 23) +
+  geom_point(aes(x = Median)) +
+  geom_segment(aes(x = `5%`,
+                   xend = `95%`)) +
+  theme_bw()
+```
+
+We see that our estimates were close to the empirical quantiles.
