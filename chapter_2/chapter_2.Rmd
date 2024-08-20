@@ -40,7 +40,7 @@ library(kableExtra)
 
 ## Derive Equation 2.6
 
----
+___
 
 The authors leave the following integration problem as an exercise to the reader.
 
@@ -97,7 +97,7 @@ $$
 
 ## Show that the binomial is in the exponential family
 
----
+___
 
 From the chapter, exponential families are of the form
 
@@ -144,7 +144,7 @@ $$
 
 ## 1
 
----
+___
 
 **Posterior inference: suppose you have a Beta(4, 4) prior distribution on the probability θ that a coin will yield a ‘head’ when spun in a specified manner. The coin is independently spun ten times, and ‘heads’ appear fewer than 3 times. You are not told how many heads were seen, only that the number is less than 3. Calculate your exact posterior density (up to a proportionality constant) for θ and sketch it.**
 
@@ -209,7 +209,7 @@ legend(
 
 ## 2
 
----
+___
 
 **Predictive distributions: consider two coins, C1 and C2 , with the following characteristics: Pr(heads|C1 ) = 0.6 and Pr(heads|C2 ) = 0.4. Choose one of the coins at random and imagine spinning it repeatedly. Given that the first two spins from the chosen coin are tails, what is the expectation of the number of additional spins until a head shows up?**
 
@@ -254,7 +254,7 @@ $$
 
 ## 3 {.tabset}
 
----
+___
 
 **Predictive distributions: let y be the number of 6’s in 1000 rolls of a fair die.**
 
@@ -300,7 +300,7 @@ tibble(
 
 ## 4 {.tabset}
 
----
+___
 
 Predictive distributions: let y be the number of 6’s in 1000 independent rolls of a particular real die, which may be unfair. Let θ be the probability that the die lands on ‘6.’ Suppose your prior distribution for θ is as follows:
 
@@ -423,3 +423,128 @@ ggplot(empirical_results,
 ```
 
 We see that our estimates were close to the empirical quantiles.
+
+## 5 {.tabset}
+
+___
+
+**Posterior distribution as a compromise between prior information and data: let y be the number of heads in n spins of a coin, whose probability of heads is θ.**
+
+### a)
+
+If your prior distribution for $\theta$ is uniform on the range [0, 1], derive your predictive distribution for $y$.
+
+$$
+\begin{align*}
+  \Pr(y=k) &=
+    \int_0^1 \Pr(y=k \mid \theta) d\theta \\
+    &= \int_0^1 {n \choose k} \theta^k (1 - \theta)^{n-k} d\theta \\
+    &= {n \choose k} B(k+1, n-k+1)
+       \int_0^1 \frac{\theta^k (1 - \theta)^{n-k}}{B(k+1, n-k+1)} d\theta \\
+    &= \frac{\Gamma(n+1)}{\Gamma(k+1)\Gamma(n-k+1)} \times
+       \frac{\Gamma(k+1)\Gamma(n-k+1)}{\Gamma(n+2)} \times 1 \\
+    &= \frac{\Gamma(n+1)}{\Gamma(n+2)} \\
+    &= \frac{1}{n+1}
+\end{align*}
+$$
+
+### b)
+
+Suppose you assign a $Beta(\alpha, \beta)$ prior distribution for $\theta$, and then you observe $y$ heads out of $n$ spins. Show algebraically that your posterior mean of $\theta$ always lies between your prior mean, $\frac{\alpha}{\alpha + \beta}$ and the observed relative frequency of heads, $\frac{y}{n}$.
+
+First let's find the posterior mean of $\theta$.
+
+$$
+\begin{align*}
+  \E(\theta \mid y)
+    &= \int_0^1 \theta \cdot Beta(\alpha + y, \beta + n - y)\\
+    &= \int_0^1 \frac{\theta \cdot \theta^{\alpha + y - 1} 
+                                   (1 - \theta)^{\beta + n - y - 1} d\theta}
+                     {B(\alpha + y, \beta + n - y)} \\
+    &= \frac{B(\alpha + y + 1, \beta + n - y)}{B(\alpha + y, \beta + n - y)}
+       \int_0^1 \frac{\theta^{\alpha + y} (1 - \theta)^{\beta + n - y - 1} d\theta}
+                     {B(\alpha + y + 1, \beta + n - y)}\\
+    &= \frac{\Gamma(\alpha + y + 1)\Gamma(\beta + n - y)}
+            {\Gamma(\alpha + \beta + n - 1)}
+       \frac{\Gamma(\alpha + \beta + n)}
+            {\Gamma(\alpha + y)\Gamma(\beta + n - y)} \\
+    &= \frac{\alpha + y}{\alpha + \beta + n}
+\end{align*}
+$$
+
+Now we can rewrite the posterior mean as a function of the prior and observed relative frequency.
+
+$$
+\begin{align*}
+  \frac{\alpha + y}{\alpha + \beta + n}
+    &= \frac{\alpha + \beta}{\alpha + \beta + n} \cdot
+       \frac{\alpha}{\alpha + \beta} +
+       \frac{n}{\alpha + \beta + n} \cdot
+       \frac{y}{n} \\
+    &= \gamma \frac{\alpha}{\alpha + \beta} + (1 - \gamma) \frac{y}{n}
+\end{align*}
+$$
+
+where $\frac{\alpha + \beta}{\alpha + \beta + n} = \gamma$ and $\gamma \in (0, 1)$, so the posterior mean is a weighted average of the prior mean and the relative frequency of the data. All weighted averages of two observations are between the two observed values unless one of the weights is zero, so the posterior mean must be between the prior mean and relative frequency.
+
+### c)
+
+The posterior variance is given by
+
+$$
+\Var(\theta \mid n, y) = \frac{(\alpha + y)(\beta + n - y)}
+                              {(\alpha + \beta + n)^2(\alpha + \beta + n + 1)}
+$$
+
+Given a uniform prior, $\alpha = \beta = 1$, so the prior variance is $\frac{1}{12}$.
+
+The posterior variance with these hyperparameters is
+
+$$
+\begin{align*}
+  \Var(\theta \mid n, y) 
+    &= \frac{(\alpha + y)(\beta + n - y)}
+            {(\alpha + \beta + n)^2(\alpha + \beta + n + 1)} \\
+    &= \frac{(1 + y)(1 + n - y)}
+            {(2 + n)^2(n + 3)} \\
+    &= \frac{1 + y}{2 + n} \frac{1 + n - y}{2 + n} \frac{1}{n + 3}
+\end{align*}
+$$
+
+The first two terms sum to 1, so their greatest multiple is 0.25 (see chart below). The last term is less than $\frac{1}{3}$, so the overall variance must be smaller than $\frac{1}{12}$.
+
+```{r}
+x <- seq(0, 1, length.out = 100)
+plot(x, x * (1 - x), type = "l", bty = "n")
+abline(h = 0.25, lty = "dashed")
+```
+
+### d)
+
+We will do this experimentally. Let's try small n and y, where n = 2 and y = 1.
+
+```{r}
+alpha <- 1:10
+beta <- 1:10
+
+prior_variance_fn <- function(alpha, beta) {
+  alpha * beta / ((alpha + beta)^2 * (alpha + beta + 1))
+}
+
+posterior_variance_fn <- function(alpha, beta, y, n) {
+  (alpha + y) * (beta + n - y) /
+    ((alpha + beta + n)^2 * (alpha + beta + n + 1))
+}
+
+prior_variance <- outer(alpha, beta, prior_variance_fn)
+posterior_variance <- outer(alpha, beta, \(a, b)
+                            posterior_variance_fn(a, b, 1, 2))
+
+grid <- expand.grid(alpha = alpha, beta = beta)
+grid$prior_variance <- prior_variance_fn(grid$alpha, grid$beta)
+grid$posterior_variance <- posterior_variance_fn(grid$alpha, grid$beta, 1, 2)
+grid[grid$posterior_variance > grid$prior_variance,]
+```
+
+Here are just some instances where this is true for y = 1 and n = 2.
+
